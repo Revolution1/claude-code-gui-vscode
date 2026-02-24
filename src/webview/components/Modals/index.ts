@@ -13,7 +13,7 @@ export type { MCPModalProps, MCPServer, MCPServerType, PopularServer } from "./M
 
 // Model Selector Modal
 export { ModelSelectorModal } from "./ModelSelectorModal";
-export type { ModelSelectorModalProps, ModelOption, ModelInfo } from "./ModelSelectorModal";
+export type { ModelSelectorModalProps } from "./ModelSelectorModal";
 
 // File Picker Modal
 export { FilePickerModal } from "./FilePickerModal";

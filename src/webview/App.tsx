@@ -168,6 +168,7 @@ export const App: React.FC = () => {
                 isProcessing={chat.isProcessing}
                 todos={chat.todos}
                 currentModel={settings.selectedModel}
+                availableModels={settings.availableModels}
                 planMode={settings.planMode}
                 thinkingMode={settings.thinkingMode}
                 thinkingIntensity={settings.thinkingIntensity}
@@ -212,24 +213,10 @@ export const App: React.FC = () => {
                 <ModelSelectorModal
                     isOpen={true}
                     onClose={state.uiActions.closeModal}
-                    selectedModel={
-                        settings.selectedModel === "claude-opus-4-5-20251101"
-                            ? "opus"
-                            : settings.selectedModel === "claude-haiku-4-5-20251001"
-                              ? "haiku"
-                              : "sonnet"
-                    }
-                    onSelectModel={(model) => {
-                        const modelMap: Record<string, string> = {
-                            opus: "claude-opus-4-5-20251101",
-                            sonnet: "claude-sonnet-4-5-20250929",
-                            haiku: "claude-haiku-4-5-20251001",
-                        };
-                        callbacks.handleModelChange(
-                            modelMap[model] || "claude-sonnet-4-5-20250929",
-                        );
-                    }}
+                    selectedModel={settings.selectedModel}
+                    onSelectModel={callbacks.handleModelChange}
                     onConfigure={() => state.uiActions.openModal("settings")}
+                    availableModels={settings.availableModels}
                 />
             )}
 

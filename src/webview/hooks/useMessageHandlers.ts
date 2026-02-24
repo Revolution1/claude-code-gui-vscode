@@ -490,6 +490,15 @@ export function useMessageHandlers(deps: MessageHandlerDeps): UseMessageHandlers
                 useUsageStore.getState().setRefreshing(false);
             },
 
+            availableModels: (msg: unknown) => {
+                const data = msg as { models: unknown[] };
+                if (Array.isArray(data.models) && data.models.length > 0) {
+                    useSettingsStore.getState().setAvailableModels(
+                        data.models as import("../../shared/constants").ModelInfo[],
+                    );
+                }
+            },
+
             mcpServers: (msg: unknown) => {
                 const message = msg as {
                     data: Record<

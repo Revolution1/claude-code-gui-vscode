@@ -49,18 +49,25 @@ export class PanelProvider {
         this._stateManager = new SessionStateManager();
         this._settingsManager = new SettingsManager();
 
-        // Load saved model preference
+        // Load saved model preference with backward compatibility
         const defaultModel = this._settingsManager.getDefaultModel();
         const savedModel = this._context.workspaceState.get<string>(
             "claude.selectedModel",
             defaultModel,
         );
-        this._stateManager.selectedModel = savedModel === "default" ? defaultModel : savedModel;
-        if (savedModel === "default") {
-            this._context.workspaceState.update(
-                "claude.selectedModel",
-                this._stateManager.selectedModel,
-            );
+
+        // Migrate old short-name formats to full model IDs
+        const SHORT_TO_FULL: Record<string, string> = {
+            sonnet: "claude-sonnet-4-5-20250929",
+            opus: "claude-opus-4-5-20251101",
+            haiku: "claude-haiku-4-5-20251001",
+            default: defaultModel,
+        };
+        const resolvedModel = SHORT_TO_FULL[savedModel] ?? savedModel;
+        this._stateManager.selectedModel = resolvedModel;
+
+        if (resolvedModel !== savedModel) {
+            this._context.workspaceState.update("claude.selectedModel", resolvedModel);
         }
 
         // Load cached subscription type
@@ -520,6 +527,18 @@ export class PanelProvider {
 
         this._sendCurrentSettings();
         this._sendUsageData();
+        this._sendAvailableModels();
+    }
+
+    private async _sendAvailableModels(): Promise<void> {
+        const dynamicModels = await this._claudeService.fetchAvailableModels();
+        if (dynamicModels) {
+            this._postMessage({
+                type: "availableModels",
+                models: dynamicModels,
+            });
+        }
+        // If null, webview uses the static MODEL_REGISTRY as default
     }
 
     private _sendCurrentSettings(): void {

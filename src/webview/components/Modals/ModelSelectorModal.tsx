@@ -1,42 +1,18 @@
 import React, { useCallback } from "react";
 import { Modal } from "./Modal";
-
-export type ModelOption = "opus" | "sonnet" | "haiku" | "default";
-
-export interface ModelInfo {
-    id: ModelOption;
-    name: string;
-    description: string;
-    modelId?: string;
-}
-
-const MODELS: ModelInfo[] = [
-    {
-        id: "sonnet",
-        name: "Sonnet 4.5 - Balanced model",
-        description: "Good balance of speed and capability (recommended)",
-        modelId: "claude-sonnet-4-5-20250929",
-    },
-    {
-        id: "opus",
-        name: "Opus 4.5 - Most capable model",
-        description: "Best for complex tasks and highest quality output",
-        modelId: "claude-opus-4-5-20251101",
-    },
-    {
-        id: "haiku",
-        name: "Haiku 4.5 - Fast model",
-        description: "Fastest responses for simpler tasks",
-        modelId: "claude-haiku-4-5-20251001",
-    },
-];
+import { MODEL_REGISTRY } from "../../../shared/constants";
+import type { ModelInfo } from "../../../shared/constants";
 
 export interface ModelSelectorModalProps {
     isOpen: boolean;
     onClose: () => void;
-    selectedModel: ModelOption;
-    onSelectModel: (model: ModelOption) => void;
+    /** Full model ID, e.g. "claude-sonnet-4-5-20250929" */
+    selectedModel: string;
+    /** Callback with full model ID */
+    onSelectModel: (modelId: string) => void;
     onConfigure: () => void;
+    /** Optional dynamic model list; falls back to MODEL_REGISTRY */
+    availableModels?: ModelInfo[];
 }
 
 export const ModelSelectorModal: React.FC<ModelSelectorModalProps> = ({
@@ -45,10 +21,13 @@ export const ModelSelectorModal: React.FC<ModelSelectorModalProps> = ({
     selectedModel,
     onSelectModel,
     onConfigure,
+    availableModels,
 }) => {
+    const models = availableModels ?? MODEL_REGISTRY;
+
     const handleSelect = useCallback(
-        (model: ModelOption) => {
-            onSelectModel(model);
+        (modelId: string) => {
+            onSelectModel(modelId);
             onClose();
         },
         [onSelectModel, onClose],
@@ -62,7 +41,7 @@ export const ModelSelectorModal: React.FC<ModelSelectorModalProps> = ({
                 </p>
 
                 <div className="space-y-2">
-                    {MODELS.map((model) => (
+                    {models.map((model) => (
                         <label
                             key={model.id}
                             className={`
@@ -86,26 +65,24 @@ export const ModelSelectorModal: React.FC<ModelSelectorModalProps> = ({
                             />
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between gap-2">
-                                    <span className="text-sm font-medium">{model.name}</span>
-                                    {model.id === "default" && (
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onConfigure();
-                                            }}
-                                            className="px-2 py-1 text-xs rounded hover:bg-[var(--vscode-toolbar-hoverBackground)] text-[var(--vscode-textLink-foreground)]"
-                                        >
-                                            Configure
-                                        </button>
-                                    )}
+                                    <span className="text-sm font-medium">
+                                        {model.shortName} - {model.description}
+                                    </span>
                                 </div>
                                 <p className="text-xs text-[var(--vscode-descriptionForeground)] mt-0.5">
-                                    {model.description}
+                                    {model.displayName}
                                 </p>
                             </div>
                         </label>
                     ))}
                 </div>
+
+                <button
+                    onClick={onConfigure}
+                    className="w-full px-3 py-2 text-xs rounded hover:bg-[var(--vscode-toolbar-hoverBackground)] text-[var(--vscode-textLink-foreground)] border border-[var(--vscode-editorWidget-border)]"
+                >
+                    Configure Default Model
+                </button>
             </div>
         </Modal>
     );

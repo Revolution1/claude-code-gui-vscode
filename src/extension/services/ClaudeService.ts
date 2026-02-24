@@ -10,7 +10,10 @@ import {
     DEFAULT_WSL_CONFIG,
     getCommandPattern,
     ToolName,
+    MODEL_REGISTRY,
+    DEFAULT_TOKEN_PRICING,
 } from "../../shared/constants";
+import type { ModelInfo } from "../../shared/constants";
 import { convertToWSLPath } from "../utils";
 
 /**
@@ -392,6 +395,74 @@ export class ClaudeService implements vscode.Disposable {
         const responseJson = JSON.stringify(response) + "\n";
         console.log("Sending permission response:", responseJson);
         this._process.stdin.write(responseJson);
+    }
+
+    /**
+     * Fetch available models from the Claude CLI.
+     * Returns a model list or null if the command fails.
+     */
+    public async fetchAvailableModels(): Promise<ModelInfo[] | null> {
+        return new Promise((resolve) => {
+            const config = vscode.workspace.getConfiguration("claudeCodeGui");
+            const executable = config.get<string>("claude.executable", "claude");
+
+            cp.execFile(
+                executable,
+                ["-p", "List available Claude model IDs as a JSON array of objects with fields: id, display_name, description. Only output the JSON, nothing else.", "--output-format", "json"],
+                { timeout: 15000, encoding: "utf-8" },
+                (error, stdout) => {
+                    if (error) {
+                        console.log("[ClaudeService] Failed to fetch model list from CLI:", error.message);
+                        resolve(null);
+                        return;
+                    }
+
+                    try {
+                        const parsed = JSON.parse(stdout.trim());
+                        // The CLI with --output-format json wraps in { result: "..." }
+                        const resultStr = typeof parsed === "string" ? parsed : parsed.result;
+                        if (typeof resultStr !== "string") {
+                            console.log("[ClaudeService] Unexpected model list format");
+                            resolve(null);
+                            return;
+                        }
+
+                        // Try to parse the inner JSON array from Claude's response
+                        const jsonMatch = resultStr.match(/\[[\s\S]*\]/);
+                        if (!jsonMatch) {
+                            console.log("[ClaudeService] No JSON array found in model list response");
+                            resolve(null);
+                            return;
+                        }
+
+                        const models = JSON.parse(jsonMatch[0]);
+                        if (!Array.isArray(models) || models.length === 0) {
+                            resolve(null);
+                            return;
+                        }
+
+                        const mapped: ModelInfo[] = models.map((m: any) => ({
+                            id: m.id || m.model_id || "",
+                            displayName: m.display_name || m.name || m.id || "",
+                            shortName: (m.display_name || m.name || m.id || "").replace(/^Claude\s+/i, ""),
+                            description: m.description || "",
+                            contextWindow: m.context_window || 200000,
+                            pricing: m.pricing || DEFAULT_TOKEN_PRICING,
+                        })).filter((m: ModelInfo) => m.id);
+
+                        if (mapped.length > 0) {
+                            console.log(`[ClaudeService] Fetched ${mapped.length} models from CLI`);
+                            resolve(mapped);
+                        } else {
+                            resolve(null);
+                        }
+                    } catch (parseError) {
+                        console.log("[ClaudeService] Failed to parse model list:", parseError);
+                        resolve(null);
+                    }
+                },
+            );
+        });
     }
 
     /**

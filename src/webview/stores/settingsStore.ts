@@ -10,18 +10,19 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import {
-    ClaudeModel,
     ThinkingIntensity,
     CodeBlockTheme,
     DEFAULT_WSL_CONFIG,
     DEFAULT_UI_SETTINGS,
     DEFAULT_CHAT_SETTINGS,
     DEFAULT_THINKING_SETTINGS,
-    DEFAULT_MODEL,
+    DEFAULT_MODEL_ID,
+    MODEL_REGISTRY,
 } from "../../shared/constants";
+import type { ModelInfo } from "../../shared/constants";
 
 // Re-export enums for backward compatibility
-export { ClaudeModel, ThinkingIntensity, CodeBlockTheme };
+export { ThinkingIntensity, CodeBlockTheme };
 
 // ============================================================================
 // Types
@@ -47,8 +48,10 @@ export interface WSLConfig {
 export interface SettingsState {
     /** WSL configuration */
     wsl: WSLConfig;
-    /** Selected Claude model */
-    selectedModel: ClaudeModel;
+    /** Selected Claude model (full model ID) */
+    selectedModel: string;
+    /** Available models (dynamically loaded or static fallback) */
+    availableModels: ModelInfo[];
     /** Whether thinking mode is enabled */
     thinkingMode: boolean;
     /** Thinking intensity level */
@@ -91,8 +94,10 @@ export interface SettingsState {
 export interface SettingsActions {
     /** Update WSL configuration */
     updateWSL: (config: Partial<WSLConfig>) => void;
-    /** Set selected model */
-    setSelectedModel: (model: ClaudeModel) => void;
+    /** Set selected model (full model ID) */
+    setSelectedModel: (model: string) => void;
+    /** Set available models (from dynamic CLI fetch) */
+    setAvailableModels: (models: ModelInfo[]) => void;
     /** Toggle thinking mode */
     toggleThinkingMode: () => void;
     /** Set thinking mode enabled state */
@@ -149,7 +154,8 @@ const initialState: SettingsState = {
         nodePath: DEFAULT_WSL_CONFIG.NODE_PATH,
         claudePath: DEFAULT_WSL_CONFIG.CLAUDE_PATH,
     },
-    selectedModel: DEFAULT_MODEL,
+    selectedModel: DEFAULT_MODEL_ID,
+    availableModels: MODEL_REGISTRY,
     thinkingMode: DEFAULT_THINKING_SETTINGS.ENABLED,
     thinkingIntensity: DEFAULT_THINKING_SETTINGS.INTENSITY,
     showThinkingProcess: DEFAULT_THINKING_SETTINGS.SHOW_PROCESS,
@@ -187,6 +193,8 @@ export const useSettingsStore = create<SettingsStore>()(
                 })),
 
             setSelectedModel: (model) => set({ selectedModel: model }),
+
+            setAvailableModels: (models) => set({ availableModels: models }),
 
             toggleThinkingMode: () => set((state) => ({ thinkingMode: !state.thinkingMode })),
 

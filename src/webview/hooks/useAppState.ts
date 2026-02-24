@@ -44,6 +44,7 @@ export interface ChatStoreActions {
 
 export interface SettingsStoreState {
     selectedModel: ReturnType<typeof useSettingsStore.getState>["selectedModel"];
+    availableModels: ReturnType<typeof useSettingsStore.getState>["availableModels"];
     thinkingMode: boolean;
     thinkingIntensity: ReturnType<typeof useSettingsStore.getState>["thinkingIntensity"];
     planMode: boolean;
@@ -134,6 +135,7 @@ export function useAppState(): UseAppStateReturn {
     const resetChat = useChatStore((s) => s.resetChat);
 
     const selectedModel = useSettingsStore((s) => s.selectedModel);
+    const availableModels = useSettingsStore((s) => s.availableModels);
     const thinkingMode = useSettingsStore((s) => s.thinkingMode);
     const thinkingIntensity = useSettingsStore((s) => s.thinkingIntensity);
     const planMode = useSettingsStore((s) => s.planMode);
@@ -199,6 +201,7 @@ export function useAppState(): UseAppStateReturn {
         },
         settings: {
             selectedModel,
+            availableModels,
             thinkingMode,
             thinkingIntensity,
             planMode,

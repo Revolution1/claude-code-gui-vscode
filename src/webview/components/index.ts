@@ -102,8 +102,6 @@ export type {
     MCPServerType,
     PopularServer,
     ModelSelectorModalProps,
-    ModelOption,
-    ModelInfo,
     FilePickerModalProps,
     FileItem,
     ThinkingIntensityModalProps,

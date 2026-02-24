@@ -249,18 +249,8 @@
                 },
                 "claudeCodeGui.claude.model": {
                     "type": "string",
-                    "enum": [
-                        "claude-sonnet-4-5-20250929",
-                        "claude-opus-4-5-20251101",
-                        "claude-haiku-4-5-20251001"
-                    ],
-                    "enumDescriptions": [
-                        "Claude Sonnet 4.5 - Balanced performance (default)",
-                        "Claude Opus 4.5 - Most capable model",
-                        "Claude Haiku 4.5 - Fast and efficient"
-                    ],
                     "default": "claude-sonnet-4-5-20250929",
-                    "description": "Default Claude model to use"
+                    "description": "Claude model ID or alias. Known models: claude-sonnet-4-5-20250929 (Balanced, default), claude-opus-4-5-20251101 (Most capable), claude-haiku-4-5-20251001 (Fast). You can also use aliases like 'sonnet', 'opus', 'haiku' or enter any valid model ID supported by the Claude CLI."
                 },
                 "claudeCodeGui.thinking.enabled": {
                     "type": "boolean",

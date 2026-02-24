@@ -5,6 +5,7 @@ import { TodoDisplay } from "../Tools";
 import { JourneyTimeline } from "./JourneyTimeline";
 import type { TodoItem } from "../Tools";
 import { ThinkingIntensity } from "../../../shared/constants";
+import type { ModelInfo } from "../../../shared/constants";
 import { formatDuration, formatTokenCount } from "../../utils";
 import { Clock, Zap, DollarSign } from "lucide-react";
 
@@ -13,6 +14,7 @@ interface ChatContainerProps {
     isProcessing: boolean;
     todos: TodoItem[];
     currentModel: string;
+    availableModels?: ModelInfo[];
     planMode: boolean;
     thinkingMode: boolean;
     thinkingIntensity: ThinkingIntensity;
@@ -38,6 +40,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     isProcessing,
     todos,
     currentModel,
+    availableModels,
     planMode,
     thinkingMode,
     thinkingIntensity,
@@ -220,6 +223,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                     <MessageInput
                         disabled={isProcessing}
                         currentModel={currentModel}
+                        availableModels={availableModels}
                         planMode={planMode}
                         thinkingMode={thinkingMode}
                         thinkingIntensity={thinkingIntensity}

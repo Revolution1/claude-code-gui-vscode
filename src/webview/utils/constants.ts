@@ -70,9 +70,11 @@ export {
     SLASH_COMMAND_TYPE_LABELS,
 
     // Model constants
-    MODEL_DISPLAY_NAMES,
-    MODEL_DESCRIPTIONS,
-    DEFAULT_MODEL,
+    MODEL_REGISTRY,
+    DEFAULT_MODEL_ID,
+    getModelInfo,
+    getModelDisplayName,
+    getModelShortName,
     THINKING_INTENSITY_NAMES,
     DEFAULT_THINKING_INTENSITY,
 
@@ -177,7 +179,7 @@ export const DEFAULT_EDITOR_SETTINGS = {
  */
 export const DEFAULT_CLAUDE_SETTINGS = {
     cliPath: null,
-    defaultModel: "claude-sonnet-4-5-20250929",
+    defaultModel: DEFAULT_MODEL_ID,
     useWsl: false,
     defaultWorkingDirectory: null,
     maxTokensPerRequest: null,
@@ -343,13 +345,11 @@ export const POPULAR_MCP_SERVERS: MCPServerConfig[] = [
 // ============================================================================
 
 /**
- * Context window sizes by model (legacy format for backward compatibility)
+ * Context window sizes by model (derived from MODEL_REGISTRY)
  * @deprecated Use CONTEXT_WINDOW_SIZE from shared constants instead
  */
 export const CONTEXT_WINDOW_SIZES: Record<string, number> = {
-    "claude-sonnet-4-5-20250929": 200000,
-    "claude-opus-4-5-20251101": 200000,
-    "claude-haiku-4-5-20251001": 200000,
+    ...Object.fromEntries(MODEL_REGISTRY.map((m) => [m.id, m.contextWindow])),
     default: 200000,
 };
 

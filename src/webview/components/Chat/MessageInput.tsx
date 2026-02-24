@@ -13,7 +13,8 @@ import {
     Image,
     X,
 } from "lucide-react";
-import { ThinkingIntensity } from "../../../shared/constants";
+import { ThinkingIntensity, MODEL_REGISTRY, getModelShortName } from "../../../shared/constants";
+import type { ModelInfo } from "../../../shared/constants";
 
 /** Attachment interface for files and images */
 export interface Attachment {
@@ -33,6 +34,8 @@ interface MessageInputProps {
     thinkingIntensity: ThinkingIntensity;
     yoloMode: boolean;
     sessionId?: string | null;
+    /** Available models (dynamic or static fallback) */
+    availableModels?: ModelInfo[];
     onSendMessage: (content: string) => void;
     onStop: () => void;
     onModelChange: (model: string) => void;
@@ -76,23 +79,7 @@ const THINKING_MODES: Array<{
     },
 ];
 
-const MODELS = [
-    {
-        id: "claude-sonnet-4-5-20250929",
-        name: "Claude Sonnet 4.5",
-        shortName: "Sonnet 4.5",
-    },
-    {
-        id: "claude-opus-4-5-20251101",
-        name: "Claude Opus 4.5",
-        shortName: "Opus 4.5",
-    },
-    {
-        id: "claude-haiku-4-5-20251001",
-        name: "Claude Haiku 4.5",
-        shortName: "Haiku 4.5",
-    },
-];
+// Models are sourced from MODEL_REGISTRY (shared/constants)
 
 export const MessageInput: React.FC<MessageInputProps> = ({
     disabled,
@@ -101,6 +88,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     thinkingMode,
     thinkingIntensity,
     yoloMode,
+    availableModels,
     onSendMessage,
     onStop,
     onModelChange,
@@ -111,6 +99,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     onMcpAction,
     sessionId,
 }) => {
+    const models = availableModels ?? MODEL_REGISTRY;
     // Build session-specific storage key
     const DRAFT_STORAGE_KEY = sessionId
         ? `claude-code-gui-draft-${sessionId}`
@@ -417,7 +406,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         [processFiles],
     );
 
-    const currentModelName = MODELS.find((m) => m.id === currentModel)?.shortName || "Model";
+    const currentModelName = getModelShortName(currentModel);
     const currentThinkingMode =
         THINKING_MODES.find((m) => m.id === thinkingIntensity) || THINKING_MODES[0];
 
@@ -527,7 +516,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
                         {showModelSelector && (
                             <div className="absolute bottom-full left-0 mb-2 py-1 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl z-50 min-w-[200px] overflow-hidden animate-slide-up backdrop-blur-xl">
-                                {MODELS.map((model) => (
+                                {models.map((model) => (
                                     <button
                                         key={model.id}
                                         onClick={() => handleModelSelect(model.id)}
@@ -537,7 +526,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                                                 : "text-white/80"
                                         }`}
                                     >
-                                        {model.name}
+                                        {model.displayName}
                                         {currentModel === model.id && (
                                             <Sparkles className="w-3 h-3" />
                                         )}

@@ -19,9 +19,8 @@ import {
     selectUISettings,
     selectContextSettings,
     type WSLConfig,
-    type ThinkingIntensity,
-    type ClaudeModel,
 } from "../../webview/stores/settingsStore";
+import type { ThinkingIntensity } from "../../shared/constants";
 
 // Mock localStorage for persistence tests
 const localStorageMock = (() => {
@@ -169,7 +168,7 @@ describe("settingsStore", () => {
 
             it("should accept all valid model options", () => {
                 const { result } = renderHook(() => useSettingsStore());
-                const models: ClaudeModel[] = [
+                const models: string[] = [
                     "claude-sonnet-4-5-20250929",
                     "claude-opus-4-5-20251101",
                     "claude-3-5-sonnet-20241022",

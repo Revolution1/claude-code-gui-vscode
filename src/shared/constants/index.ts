@@ -167,39 +167,107 @@ export enum PermissionDecision {
 }
 
 // ============================================================================
-// Claude Model Enums
+// Model Registry - Single Source of Truth
 // ============================================================================
 
 /**
- * Available Claude models
+ * Model information structure used across the entire application
  */
+export interface ModelInfo {
+    /** Full model ID used by the CLI, e.g. "claude-sonnet-4-5-20250929" */
+    id: string;
+    /** Human-readable display name, e.g. "Claude Sonnet 4.5" */
+    displayName: string;
+    /** Short display name for compact UI, e.g. "Sonnet 4.5" */
+    shortName: string;
+    /** Description of the model's characteristics */
+    description: string;
+    /** Context window size in tokens */
+    contextWindow: number;
+    /** Token pricing per million tokens */
+    pricing: TokenPricing;
+}
+
+/**
+ * Central model registry - THE single source of truth for all model information.
+ * To add a new model, add an entry here. All UI components and services derive from this.
+ */
+export const MODEL_REGISTRY: ModelInfo[] = [
+    {
+        id: "claude-sonnet-4-5-20250929",
+        displayName: "Claude Sonnet 4.5",
+        shortName: "Sonnet 4.5",
+        description: "Balanced performance (default)",
+        contextWindow: 200000,
+        pricing: { input: 3.0, output: 15.0, cacheRead: 0.3, cacheWrite: 3.75 },
+    },
+    {
+        id: "claude-opus-4-5-20251101",
+        displayName: "Claude Opus 4.5",
+        shortName: "Opus 4.5",
+        description: "Most capable model",
+        contextWindow: 200000,
+        pricing: { input: 15.0, output: 75.0, cacheRead: 1.5, cacheWrite: 18.75 },
+    },
+    {
+        id: "claude-haiku-4-5-20251001",
+        displayName: "Claude Haiku 4.5",
+        shortName: "Haiku 4.5",
+        description: "Fast and efficient",
+        contextWindow: 200000,
+        pricing: { input: 1.0, output: 5.0, cacheRead: 0.1, cacheWrite: 1.25 },
+    },
+];
+
+/** Default model ID */
+export const DEFAULT_MODEL_ID = "claude-sonnet-4-5-20250929";
+
+/** Default token pricing (used as fallback for unknown models) */
+export const DEFAULT_TOKEN_PRICING: TokenPricing = {
+    input: 3.0,
+    output: 15.0,
+    cacheRead: 0.3,
+    cacheWrite: 3.75,
+};
+
+/** Find model info by full ID. Returns undefined if not found. */
+export function getModelInfo(modelId: string): ModelInfo | undefined {
+    return MODEL_REGISTRY.find((m) => m.id === modelId);
+}
+
+/** Get display name for a model ID. Falls back to the raw ID. */
+export function getModelDisplayName(modelId: string): string {
+    return getModelInfo(modelId)?.displayName ?? modelId;
+}
+
+/** Get short name for a model ID. Falls back to display name or raw ID. */
+export function getModelShortName(modelId: string): string {
+    const info = getModelInfo(modelId);
+    return info?.shortName ?? info?.displayName ?? modelId;
+}
+
+// ============================================================================
+// Backward Compatibility (deprecated)
+// ============================================================================
+
+/** @deprecated Use MODEL_REGISTRY instead */
 export enum ClaudeModel {
     Sonnet = "claude-sonnet-4-5-20250929",
     Opus = "claude-opus-4-5-20251101",
     Haiku = "claude-haiku-4-5-20251001",
 }
 
-/**
- * Model display names
- */
-export const MODEL_DISPLAY_NAMES: Record<ClaudeModel, string> = {
-    [ClaudeModel.Sonnet]: "Claude Sonnet 4.5",
-    [ClaudeModel.Opus]: "Claude Opus 4.5",
-    [ClaudeModel.Haiku]: "Claude Haiku 4.5",
-};
+/** @deprecated Use getModelDisplayName() instead */
+export const MODEL_DISPLAY_NAMES: Record<ClaudeModel, string> = Object.fromEntries(
+    MODEL_REGISTRY.map((m) => [m.id, m.displayName]),
+) as Record<ClaudeModel, string>;
 
-/**
- * Model descriptions
- */
-export const MODEL_DESCRIPTIONS: Record<ClaudeModel, string> = {
-    [ClaudeModel.Sonnet]: "Balanced performance (default)",
-    [ClaudeModel.Opus]: "Most capable model",
-    [ClaudeModel.Haiku]: "Fast and efficient",
-};
+/** @deprecated Use getModelInfo()?.description instead */
+export const MODEL_DESCRIPTIONS: Record<ClaudeModel, string> = Object.fromEntries(
+    MODEL_REGISTRY.map((m) => [m.id, m.description]),
+) as Record<ClaudeModel, string>;
 
-/**
- * Default model to use
- */
+/** @deprecated Use DEFAULT_MODEL_ID instead */
 export const DEFAULT_MODEL = ClaudeModel.Sonnet;
 
 // ============================================================================
@@ -398,13 +466,11 @@ export const DEBOUNCE_DELAY = {
 } as const;
 
 /**
- * Token context window sizes by model
+ * Token context window sizes by model (derived from MODEL_REGISTRY)
  */
-export const CONTEXT_WINDOW_SIZE: Record<ClaudeModel, number> = {
-    [ClaudeModel.Sonnet]: 200000,
-    [ClaudeModel.Opus]: 200000,
-    [ClaudeModel.Haiku]: 200000,
-};
+export const CONTEXT_WINDOW_SIZE: Record<string, number> = Object.fromEntries(
+    MODEL_REGISTRY.map((m) => [m.id, m.contextWindow]),
+);
 
 /**
  * Default context window size
@@ -425,31 +491,9 @@ export interface TokenPricing {
     cacheWrite: number;
 }
 
-export const TOKEN_PRICING: Record<ClaudeModel | "default", TokenPricing> = {
-    [ClaudeModel.Sonnet]: {
-        input: 3.0,
-        output: 15.0,
-        cacheRead: 0.3,
-        cacheWrite: 3.75,
-    },
-    [ClaudeModel.Opus]: {
-        input: 15.0,
-        output: 75.0,
-        cacheRead: 1.5,
-        cacheWrite: 18.75,
-    },
-    [ClaudeModel.Haiku]: {
-        input: 1.0,
-        output: 5.0,
-        cacheRead: 0.1,
-        cacheWrite: 1.25,
-    },
-    default: {
-        input: 3.0,
-        output: 15.0,
-        cacheRead: 0.3,
-        cacheWrite: 3.75,
-    },
+export const TOKEN_PRICING: Record<string, TokenPricing> = {
+    ...Object.fromEntries(MODEL_REGISTRY.map((m) => [m.id, m.pricing])),
+    default: DEFAULT_TOKEN_PRICING,
 };
 
 // ============================================================================
@@ -862,14 +906,14 @@ export function getCommandPattern(command: string): string {
  * Get token pricing for a model
  */
 export function getTokenPricing(model: string): TokenPricing {
-    return TOKEN_PRICING[model as ClaudeModel] || TOKEN_PRICING.default;
+    return getModelInfo(model)?.pricing ?? DEFAULT_TOKEN_PRICING;
 }
 
 /**
  * Get context window size for a model
  */
 export function getContextWindowSize(model: string): number {
-    return CONTEXT_WINDOW_SIZE[model as ClaudeModel] || DEFAULT_CONTEXT_WINDOW_SIZE;
+    return getModelInfo(model)?.contextWindow ?? DEFAULT_CONTEXT_WINDOW_SIZE;
 }
 
 /**

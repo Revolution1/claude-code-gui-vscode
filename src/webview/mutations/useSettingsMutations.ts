@@ -11,7 +11,6 @@ import { useMutation, useOptimisticMutation } from "./useMutation";
 import {
     useSettingsStore,
     type SettingsState,
-    ClaudeModel,
     ThinkingIntensity,
     CodeBlockTheme,
 } from "../stores/settingsStore";
@@ -57,11 +56,11 @@ export function useUpdateModel(): MutationResult<void, UpdateModelVariables, Err
     const setSelectedModel = useSettingsStore((state) => state.setSelectedModel);
     const selectedModel = useSettingsStore((state) => state.selectedModel);
 
-    return useOptimisticMutation<void, UpdateModelVariables, ClaudeModel>({
+    return useOptimisticMutation<void, UpdateModelVariables, string>({
         mutationFn: async () => {},
         getSnapshot: () => selectedModel,
         optimisticUpdate: (variables) => {
-            setSelectedModel(variables.model as ClaudeModel);
+            setSelectedModel(variables.model);
         },
         rollback: (previousModel) => {
             setSelectedModel(previousModel);

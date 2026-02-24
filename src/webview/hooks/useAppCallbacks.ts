@@ -119,12 +119,11 @@ export function useAppCallbacks(deps: AppCallbackDeps): UseAppCallbacksReturn {
 
     const handleModelChange = useCallback(
         (model: string) => {
-            const typedModel = model as Parameters<typeof settingsActions.setSelectedModel>[0];
-            settingsActions.setSelectedModel(typedModel);
+            settingsActions.setSelectedModel(model);
             postMessage({
                 type: "saveSettings",
                 settings: {
-                    selectedModel: typedModel,
+                    selectedModel: model,
                 } as Record<string, unknown>,
             });
         },
