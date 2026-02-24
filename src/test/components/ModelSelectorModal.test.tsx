@@ -6,7 +6,7 @@ describe("ModelSelectorModal", () => {
     const defaultProps = {
         isOpen: true,
         onClose: vi.fn(),
-        selectedModel: "claude-sonnet-4-5-20250929",
+        selectedModel: "claude-sonnet-4-6",
         onSelectModel: vi.fn(),
         onConfigure: vi.fn(),
     };
@@ -41,13 +41,13 @@ describe("ModelSelectorModal", () => {
         it("should show Sonnet option", () => {
             render(<ModelSelectorModal {...defaultProps} />);
 
-            expect(screen.getByText(/Sonnet 4.5 - Balanced performance/)).toBeInTheDocument();
+            expect(screen.getByText(/Sonnet 4.6 - Balanced performance/)).toBeInTheDocument();
         });
 
         it("should show Opus option", () => {
             render(<ModelSelectorModal {...defaultProps} />);
 
-            expect(screen.getByText(/Opus 4.5 - Most capable model/)).toBeInTheDocument();
+            expect(screen.getByText(/Opus 4.6 - Most capable model/)).toBeInTheDocument();
         });
 
         it("should show Haiku option", () => {
@@ -69,7 +69,7 @@ describe("ModelSelectorModal", () => {
             render(
                 <ModelSelectorModal
                     {...defaultProps}
-                    selectedModel="claude-sonnet-4-5-20250929"
+                    selectedModel="claude-sonnet-4-6"
                 />,
             );
 
@@ -81,7 +81,7 @@ describe("ModelSelectorModal", () => {
             render(
                 <ModelSelectorModal
                     {...defaultProps}
-                    selectedModel="claude-opus-4-5-20251101"
+                    selectedModel="claude-opus-4-6"
                 />,
             );
 
@@ -105,9 +105,9 @@ describe("ModelSelectorModal", () => {
             const onSelectModel = vi.fn();
             render(<ModelSelectorModal {...defaultProps} onSelectModel={onSelectModel} />);
 
-            fireEvent.click(screen.getByText(/Opus 4.5 - Most capable model/));
+            fireEvent.click(screen.getByText(/Opus 4.6 - Most capable model/));
 
-            expect(onSelectModel).toHaveBeenCalledWith("claude-opus-4-5-20251101");
+            expect(onSelectModel).toHaveBeenCalledWith("claude-opus-4-6");
         });
 
         it("should call onSelectModel with haiku ID when haiku option clicked", () => {
@@ -123,7 +123,7 @@ describe("ModelSelectorModal", () => {
             const onClose = vi.fn();
             render(<ModelSelectorModal {...defaultProps} onClose={onClose} />);
 
-            fireEvent.click(screen.getByText(/Opus 4.5 - Most capable model/));
+            fireEvent.click(screen.getByText(/Opus 4.6 - Most capable model/));
 
             expect(onClose).toHaveBeenCalled();
         });
@@ -134,7 +134,7 @@ describe("ModelSelectorModal", () => {
             const { container } = render(
                 <ModelSelectorModal
                     {...defaultProps}
-                    selectedModel="claude-opus-4-5-20251101"
+                    selectedModel="claude-opus-4-6"
                 />,
             );
 
@@ -164,7 +164,7 @@ describe("ModelSelectorModal", () => {
             );
 
             expect(screen.getByText(/Sonnet 4.6 - Latest model/)).toBeInTheDocument();
-            expect(screen.queryByText(/Opus 4.5/)).not.toBeInTheDocument();
+            expect(screen.queryByText(/Opus 4.6/)).not.toBeInTheDocument();
         });
     });
 });

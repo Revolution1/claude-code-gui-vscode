@@ -174,7 +174,7 @@ export enum PermissionDecision {
  * Model information structure used across the entire application
  */
 export interface ModelInfo {
-    /** Full model ID used by the CLI, e.g. "claude-sonnet-4-5-20250929" */
+    /** Full model ID used by the CLI, e.g. "claude-sonnet-4-6" */
     id: string;
     /** Human-readable display name, e.g. "Claude Sonnet 4.5" */
     displayName: string;
@@ -194,17 +194,17 @@ export interface ModelInfo {
  */
 export const MODEL_REGISTRY: ModelInfo[] = [
     {
-        id: "claude-sonnet-4-5-20250929",
-        displayName: "Claude Sonnet 4.5",
-        shortName: "Sonnet 4.5",
+        id: "claude-sonnet-4-6",
+        displayName: "Claude Sonnet 4.6",
+        shortName: "Sonnet 4.6",
         description: "Balanced performance (default)",
         contextWindow: 200000,
         pricing: { input: 3.0, output: 15.0, cacheRead: 0.3, cacheWrite: 3.75 },
     },
     {
-        id: "claude-opus-4-5-20251101",
-        displayName: "Claude Opus 4.5",
-        shortName: "Opus 4.5",
+        id: "claude-opus-4-6",
+        displayName: "Claude Opus 4.6",
+        shortName: "Opus 4.6",
         description: "Most capable model",
         contextWindow: 200000,
         pricing: { input: 15.0, output: 75.0, cacheRead: 1.5, cacheWrite: 18.75 },
@@ -220,7 +220,7 @@ export const MODEL_REGISTRY: ModelInfo[] = [
 ];
 
 /** Default model ID */
-export const DEFAULT_MODEL_ID = "claude-sonnet-4-5-20250929";
+export const DEFAULT_MODEL_ID = "claude-sonnet-4-6";
 
 /** Default token pricing (used as fallback for unknown models) */
 export const DEFAULT_TOKEN_PRICING: TokenPricing = {
@@ -252,8 +252,8 @@ export function getModelShortName(modelId: string): string {
 
 /** @deprecated Use MODEL_REGISTRY instead */
 export enum ClaudeModel {
-    Sonnet = "claude-sonnet-4-5-20250929",
-    Opus = "claude-opus-4-5-20251101",
+    Sonnet = "claude-sonnet-4-6",
+    Opus = "claude-opus-4-6",
     Haiku = "claude-haiku-4-5-20251001",
 }
 

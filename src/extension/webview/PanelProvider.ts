@@ -56,12 +56,14 @@ export class PanelProvider {
             defaultModel,
         );
 
-        // Migrate old short-name formats to full model IDs
+        // Migrate old short-name or outdated formats to current model IDs
         const SHORT_TO_FULL: Record<string, string> = {
-            sonnet: "claude-sonnet-4-5-20250929",
-            opus: "claude-opus-4-5-20251101",
+            sonnet: "claude-sonnet-4-6",
+            opus: "claude-opus-4-6",
             haiku: "claude-haiku-4-5-20251001",
             default: defaultModel,
+            "claude-sonnet-4-5-20250929": "claude-sonnet-4-6",
+            "claude-opus-4-5-20251101": "claude-opus-4-6",
         };
         const resolvedModel = SHORT_TO_FULL[savedModel] ?? savedModel;
         this._stateManager.selectedModel = resolvedModel;
@@ -528,6 +530,12 @@ export class PanelProvider {
         this._sendCurrentSettings();
         this._sendUsageData();
         this._sendAvailableModels();
+
+        // Send host platform info so webview doesn't rely on navigator.platform
+        this._postMessage({
+            type: "platformInfo",
+            isWindows: process.platform === "win32",
+        });
     }
 
     private async _sendAvailableModels(): Promise<void> {

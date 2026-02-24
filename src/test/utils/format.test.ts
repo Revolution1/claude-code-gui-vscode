@@ -410,7 +410,7 @@ describe("format utilities", () => {
             };
 
             // Use model names that exist in TOKEN_PRICING
-            const opusCost = calculateCost(usage, "claude-opus-4-5-20251101");
+            const opusCost = calculateCost(usage, "claude-opus-4-6");
             const haikuCost = calculateCost(usage, "claude-haiku-4-5-20251001");
 
             expect(opusCost).toBeGreaterThan(haikuCost);

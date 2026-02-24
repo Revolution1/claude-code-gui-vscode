@@ -6,7 +6,7 @@ import { ThinkingIntensity } from "../../shared/constants";
 describe("MessageInput", () => {
     const defaultProps = {
         disabled: false,
-        currentModel: "claude-sonnet-4-5-20250929",
+        currentModel: "claude-sonnet-4-6",
         planMode: false,
         thinkingMode: false,
         thinkingIntensity: ThinkingIntensity.Think,
@@ -41,7 +41,7 @@ describe("MessageInput", () => {
         it("should render model selector", () => {
             render(<MessageInput {...defaultProps} />);
 
-            expect(screen.getByText("Sonnet 4.5")).toBeInTheDocument();
+            expect(screen.getByText("Sonnet 4.6")).toBeInTheDocument();
         });
 
         it("should render thinking mode button", () => {
@@ -154,10 +154,10 @@ describe("MessageInput", () => {
         it("should show model dropdown when clicked", () => {
             render(<MessageInput {...defaultProps} />);
 
-            fireEvent.click(screen.getByText("Sonnet 4.5"));
+            fireEvent.click(screen.getByText("Sonnet 4.6"));
 
-            expect(screen.getByText("Claude Sonnet 4.5")).toBeInTheDocument();
-            expect(screen.getByText("Claude Opus 4.5")).toBeInTheDocument();
+            expect(screen.getByText("Claude Sonnet 4.6")).toBeInTheDocument();
+            expect(screen.getByText("Claude Opus 4.6")).toBeInTheDocument();
             expect(screen.getByText("Claude Haiku 4.5")).toBeInTheDocument();
         });
 
@@ -165,26 +165,26 @@ describe("MessageInput", () => {
             const onModelChange = vi.fn();
             render(<MessageInput {...defaultProps} onModelChange={onModelChange} />);
 
-            fireEvent.click(screen.getByText("Sonnet 4.5"));
-            fireEvent.click(screen.getByText("Claude Opus 4.5"));
+            fireEvent.click(screen.getByText("Sonnet 4.6"));
+            fireEvent.click(screen.getByText("Claude Opus 4.6"));
 
-            expect(onModelChange).toHaveBeenCalledWith("claude-opus-4-5-20251101");
+            expect(onModelChange).toHaveBeenCalledWith("claude-opus-4-6");
         });
 
         it("should close dropdown after selection", () => {
             render(<MessageInput {...defaultProps} />);
 
-            fireEvent.click(screen.getByText("Sonnet 4.5"));
-            expect(screen.getByText("Claude Opus 4.5")).toBeInTheDocument();
+            fireEvent.click(screen.getByText("Sonnet 4.6"));
+            expect(screen.getByText("Claude Opus 4.6")).toBeInTheDocument();
 
-            fireEvent.click(screen.getByText("Claude Opus 4.5"));
-            expect(screen.queryByText("Claude Opus 4.5")).not.toBeInTheDocument();
+            fireEvent.click(screen.getByText("Claude Opus 4.6"));
+            expect(screen.queryByText("Claude Opus 4.6")).not.toBeInTheDocument();
         });
 
         it("should display correct model name for Opus", () => {
-            render(<MessageInput {...defaultProps} currentModel="claude-opus-4-5-20251101" />);
+            render(<MessageInput {...defaultProps} currentModel="claude-opus-4-6" />);
 
-            expect(screen.getByText("Opus 4.5")).toBeInTheDocument();
+            expect(screen.getByText("Opus 4.6")).toBeInTheDocument();
         });
 
         it("should display correct model name for Haiku", () => {
@@ -448,13 +448,13 @@ describe("MessageInput", () => {
             render(<MessageInput {...defaultProps} />);
 
             // Open dropdown
-            fireEvent.click(screen.getByText("Sonnet 4.5"));
-            expect(screen.getByText("Claude Opus 4.5")).toBeInTheDocument();
+            fireEvent.click(screen.getByText("Sonnet 4.6"));
+            expect(screen.getByText("Claude Opus 4.6")).toBeInTheDocument();
 
             // Click outside
             fireEvent.mouseDown(document.body);
 
-            expect(screen.queryByText("Claude Opus 4.5")).not.toBeInTheDocument();
+            expect(screen.queryByText("Claude Opus 4.6")).not.toBeInTheDocument();
         });
 
         it("should close thinking selector when clicking outside", () => {

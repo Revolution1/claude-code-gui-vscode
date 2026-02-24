@@ -6,7 +6,7 @@ import type { ModelInfo } from "../../../shared/constants";
 export interface ModelSelectorModalProps {
     isOpen: boolean;
     onClose: () => void;
-    /** Full model ID, e.g. "claude-sonnet-4-5-20250929" */
+    /** Full model ID, e.g. "claude-sonnet-4-6" */
     selectedModel: string;
     /** Callback with full model ID */
     onSelectModel: (modelId: string) => void;

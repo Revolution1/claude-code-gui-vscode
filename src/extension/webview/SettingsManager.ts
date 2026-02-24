@@ -73,7 +73,7 @@ const DEFAULTS = {
     WSL_DISTRO: "Ubuntu",
     WSL_NODE_PATH: "/usr/bin/node",
     WSL_CLAUDE_PATH: "/usr/local/bin/claude",
-    CLAUDE_MODEL: "claude-sonnet-4-5-20250929",
+    CLAUDE_MODEL: "claude-sonnet-4-6",
     CLAUDE_EXECUTABLE: "claude",
     THINKING_ENABLED: true,
     THINKING_INTENSITY: "think",

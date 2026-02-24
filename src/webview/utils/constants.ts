@@ -20,6 +20,8 @@ import {
     STATUS_COLORS as SharedStatusColors,
     PATTERNS as SharedPatterns,
     Breakpoint,
+    MODEL_REGISTRY as _MODEL_REGISTRY,
+    DEFAULT_MODEL_ID as _DEFAULT_MODEL_ID,
 } from "../../shared/constants";
 
 // ============================================================================
@@ -179,7 +181,7 @@ export const DEFAULT_EDITOR_SETTINGS = {
  */
 export const DEFAULT_CLAUDE_SETTINGS = {
     cliPath: null,
-    defaultModel: DEFAULT_MODEL_ID,
+    defaultModel: _DEFAULT_MODEL_ID,
     useWsl: false,
     defaultWorkingDirectory: null,
     maxTokensPerRequest: null,
@@ -349,7 +351,7 @@ export const POPULAR_MCP_SERVERS: MCPServerConfig[] = [
  * @deprecated Use CONTEXT_WINDOW_SIZE from shared constants instead
  */
 export const CONTEXT_WINDOW_SIZES: Record<string, number> = {
-    ...Object.fromEntries(MODEL_REGISTRY.map((m) => [m.id, m.contextWindow])),
+    ...Object.fromEntries(_MODEL_REGISTRY.map((m) => [m.id, m.contextWindow])),
     default: 200000,
 };
 

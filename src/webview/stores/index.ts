@@ -51,9 +51,9 @@ export type {
     SettingsActions,
     SettingsStore,
     WSLConfig,
-    ThinkingIntensity,
-    ClaudeModel,
 } from "./settingsStore";
+// Re-export enums from shared constants (ClaudeModel moved there)
+export { ThinkingIntensity, ClaudeModel } from "../../shared/constants";
 
 // ============================================================================
 // UI Store

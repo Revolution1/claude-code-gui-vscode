@@ -94,21 +94,14 @@ export const App: React.FC = () => {
         enabled: true,
         handlers,
         onUnhandledMessage: (msg) => {
-            console.warn("Unhandled message:", msg);
+            const data = msg as { type?: string; isWindows?: boolean };
+            if (data.type === "platformInfo" && data.isWindows === true && !settings.wsl.enabled) {
+                local.setShowWSLAlert(true);
+            } else {
+                console.warn("Unhandled message:", msg);
+            }
         },
     });
-
-    useEffect(() => {
-        if (typeof navigator !== "undefined") {
-            const isWindows =
-                navigator.userAgent.includes("Windows") ||
-                navigator.platform?.toLowerCase().includes("win");
-
-            if (isWindows && !settings.wsl.enabled) {
-                local.setShowWSLAlert(true);
-            }
-        }
-    }, [settings.wsl.enabled, local]);
 
     useEffect(() => {
         if (isVSCode) {

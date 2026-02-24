@@ -12,7 +12,7 @@ interface WSLAlertProps {
  */
 export const WSLAlert: React.FC<WSLAlertProps> = memo(({ onDismiss, onConfigure }) => (
     <div
-        className="flex items-center justify-between px-4 py-2 text-sm"
+        className="relative z-[60] flex items-center justify-between px-4 py-2 text-sm"
         style={{
             backgroundColor: "var(--vscode-inputValidation-warningBackground)",
             borderBottom: "1px solid var(--vscode-inputValidation-warningBorder)",

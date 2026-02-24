@@ -23,7 +23,7 @@ vi.mock("../../webview/hooks/useAppState", () => ({
             requestStartTime: null,
         },
         settings: {
-            selectedModel: "claude-sonnet-4-5-20250929",
+            selectedModel: "claude-sonnet-4-6",
             planMode: false,
             thinkingMode: false,
             thinkingIntensity: 0,
@@ -139,7 +139,7 @@ vi.mock("../../webview/components/Chat/ChatContainer", () => ({
             </button>
             <button
                 data-testid="change-model-btn"
-                onClick={() => onModelChange("claude-opus-4-5-20251101")}
+                onClick={() => onModelChange("claude-opus-4-6")}
             >
                 Change Model
             </button>
@@ -263,7 +263,7 @@ describe("App", () => {
         it("should display current model", () => {
             render(<App />);
             expect(screen.getByTestId("current-model")).toHaveTextContent(
-                "claude-sonnet-4-5-20250929",
+                "claude-sonnet-4-6",
             );
         });
     });
