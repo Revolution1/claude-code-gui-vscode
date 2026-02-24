@@ -363,15 +363,15 @@ export class UsageService implements vscode.Disposable {
             }, COMMAND_TIMEOUT_MS);
 
             try {
-                // Run minimal claude command with debug logging enabled
-                // Use haiku model for cheapest/fastest API call
-                // Cross-platform: use args array and env option instead of shell command string
+                // Run minimal claude command with verbose logging to capture rate limit headers.
+                // Use haiku model for cheapest/fastest API call.
                 const args = [
                     "-p", ".",
                     "--output-format", "json",
-                    "--model", "claude-haiku-4-5",
+                    "--model", "claude-haiku-4-5-20251001",
+                    "--verbose",
                 ];
-                this._log(`🔍 Running command: claude ${args.join(" ")} (with ANTHROPIC_LOG=debug)`);
+                this._log(`🔍 Running command: claude ${args.join(" ")}`);
 
                 this._currentProcess = spawn("claude", args, {
                     stdio: ["ignore", "pipe", "pipe"],
@@ -401,6 +401,12 @@ export class UsageService implements vscode.Disposable {
                     this._log(
                         `🔍 stdout length: ${stdout.length}, stderr length: ${stderr.length}`,
                     );
+                    if (stderr.length > 0) {
+                        this._log(`🔍 stderr preview: ${stderr.substring(0, 500)}`);
+                    }
+                    if (stdout.length > 0 && stderr.length === 0) {
+                        this._log(`🔍 stdout preview: ${stdout.substring(0, 300)}`);
+                    }
 
                     // Parse rate limit headers
                     const combinedOutput = stdout + "\n" + stderr;

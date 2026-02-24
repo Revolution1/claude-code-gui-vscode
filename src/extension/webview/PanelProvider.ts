@@ -18,6 +18,7 @@ import { SessionStateManager } from "./SessionStateManager";
 import { SettingsManager } from "./SettingsManager";
 import { ClaudeMessageProcessor, type MessagePoster } from "./ClaudeMessageProcessor";
 import type { ClaudeMessage } from "../../shared/types";
+import { MODEL_REGISTRY } from "../../shared/constants";
 
 /**
  * Provides the main chat panel functionality
@@ -538,15 +539,13 @@ export class PanelProvider {
         });
     }
 
-    private async _sendAvailableModels(): Promise<void> {
-        const dynamicModels = await this._claudeService.fetchAvailableModels();
-        if (dynamicModels) {
-            this._postMessage({
-                type: "availableModels",
-                models: dynamicModels,
-            });
-        }
-        // If null, webview uses the static MODEL_REGISTRY as default
+    private _sendAvailableModels(): void {
+        // Send the static MODEL_REGISTRY directly.
+        // Dynamic fetching via CLI prompt is unreliable (LLM may return outdated model names).
+        this._postMessage({
+            type: "availableModels",
+            models: MODEL_REGISTRY,
+        });
     }
 
     private _sendCurrentSettings(): void {
