@@ -539,12 +539,12 @@ export class PanelProvider {
         });
     }
 
-    private _sendAvailableModels(): void {
-        // Send the static MODEL_REGISTRY directly.
-        // Dynamic fetching via CLI prompt is unreliable (LLM may return outdated model names).
+    private async _sendAvailableModels(): Promise<void> {
+        // Try dynamic model discovery from CLI help, fall back to static registry
+        const models = await this._claudeService.fetchAvailableModels();
         this._postMessage({
             type: "availableModels",
-            models: MODEL_REGISTRY,
+            models: models ?? MODEL_REGISTRY,
         });
     }
 

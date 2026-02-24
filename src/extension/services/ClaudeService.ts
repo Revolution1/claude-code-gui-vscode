@@ -398,8 +398,14 @@ export class ClaudeService implements vscode.Disposable {
     }
 
     /**
-     * Fetch available models from the Claude CLI.
-     * Returns a model list or null if the command fails.
+     * Fetch available models by parsing `claude --help` output.
+     *
+     * The CLI's `--model` flag description contains current model aliases and full IDs,
+     * e.g.: "Provide an alias for the latest model (e.g. 'sonnet' or 'opus') or a
+     * model's full name (e.g. 'claude-sonnet-4-6')."
+     *
+     * We extract these, cross-reference with MODEL_REGISTRY for metadata,
+     * and return the result. Falls back to null if parsing fails.
      */
     public async fetchAvailableModels(): Promise<ModelInfo[] | null> {
         return new Promise((resolve) => {
@@ -408,56 +414,110 @@ export class ClaudeService implements vscode.Disposable {
 
             cp.execFile(
                 executable,
-                ["-p", "List available Claude model IDs as a JSON array of objects with fields: id, display_name, description. Only output the JSON, nothing else.", "--output-format", "json"],
-                { timeout: 15000, encoding: "utf-8" },
+                ["--help"],
+                { timeout: 5000, encoding: "utf-8" },
                 (error, stdout) => {
                     if (error) {
-                        console.log("[ClaudeService] Failed to fetch model list from CLI:", error.message);
+                        console.log("[ClaudeService] Failed to get CLI help:", error.message);
                         resolve(null);
                         return;
                     }
 
                     try {
-                        const parsed = JSON.parse(stdout.trim());
-                        // The CLI with --output-format json wraps in { result: "..." }
-                        const resultStr = typeof parsed === "string" ? parsed : parsed.result;
-                        if (typeof resultStr !== "string") {
-                            console.log("[ClaudeService] Unexpected model list format");
+                        // Extract the --model line(s) from help output
+                        // Example: --model <model>  Model for the current session. Provide an alias
+                        // for the latest model (e.g. 'sonnet' or 'opus') or a model's full name
+                        // (e.g. 'claude-sonnet-4-6').
+                        const modelSection = stdout.match(
+                            /--model\s+<model>\s+([\s\S]*?)(?=\n\s+--|$)/,
+                        );
+                        if (!modelSection) {
+                            console.log("[ClaudeService] No --model section found in help output");
                             resolve(null);
                             return;
                         }
 
-                        // Try to parse the inner JSON array from Claude's response
-                        const jsonMatch = resultStr.match(/\[[\s\S]*\]/);
-                        if (!jsonMatch) {
-                            console.log("[ClaudeService] No JSON array found in model list response");
-                            resolve(null);
-                            return;
+                        const helpText = modelSection[1];
+
+                        // Extract full model IDs like 'claude-sonnet-4-6'
+                        const fullIds = [
+                            ...helpText.matchAll(/['"]?(claude-[a-z0-9-]+)['"]?/g),
+                        ].map((m) => m[1]);
+
+                        // Extract aliases like 'sonnet', 'opus'
+                        const aliases = [
+                            ...helpText.matchAll(
+                                /['"]([a-z]+)['"](?:\s+or\s+['"]([a-z]+)['"])?/g,
+                            ),
+                        ].flatMap((m) => [m[1], m[2]].filter(Boolean));
+
+                        console.log(
+                            `[ClaudeService] Parsed from CLI help - full IDs: [${fullIds.join(", ")}], aliases: [${aliases.join(", ")}]`,
+                        );
+
+                        // Build model list: for each registry entry, check if the CLI
+                        // mentions it (by full ID or alias). Also add any CLI-mentioned
+                        // models not in the registry.
+                        const result: ModelInfo[] = [];
+                        const seenIds = new Set<string>();
+
+                        // First, include all registry models that the CLI supports
+                        for (const model of MODEL_REGISTRY) {
+                            const shortAlias = model.shortName
+                                .split(" ")[0]
+                                ?.toLowerCase();
+                            if (
+                                fullIds.includes(model.id) ||
+                                aliases.includes(shortAlias || "")
+                            ) {
+                                result.push(model);
+                                seenIds.add(model.id);
+                            }
                         }
 
-                        const models = JSON.parse(jsonMatch[0]);
-                        if (!Array.isArray(models) || models.length === 0) {
-                            resolve(null);
-                            return;
+                        // If we found matches, also include any registry models not
+                        // explicitly mentioned (CLI may just show examples, not full list)
+                        if (result.length > 0) {
+                            for (const model of MODEL_REGISTRY) {
+                                if (!seenIds.has(model.id)) {
+                                    result.push(model);
+                                    seenIds.add(model.id);
+                                }
+                            }
                         }
 
-                        const mapped: ModelInfo[] = models.map((m: any) => ({
-                            id: m.id || m.model_id || "",
-                            displayName: m.display_name || m.name || m.id || "",
-                            shortName: (m.display_name || m.name || m.id || "").replace(/^Claude\s+/i, ""),
-                            description: m.description || "",
-                            contextWindow: m.context_window || 200000,
-                            pricing: m.pricing || DEFAULT_TOKEN_PRICING,
-                        })).filter((m: ModelInfo) => m.id);
+                        // Add any full IDs from CLI that aren't in the registry
+                        for (const id of fullIds) {
+                            if (!seenIds.has(id)) {
+                                const name = id
+                                    .replace(/^claude-/, "")
+                                    .replace(/-/g, " ")
+                                    .replace(/\b\w/g, (c) => c.toUpperCase());
+                                result.push({
+                                    id,
+                                    displayName: `Claude ${name}`,
+                                    shortName: name,
+                                    description: "",
+                                    contextWindow: 200000,
+                                    pricing: DEFAULT_TOKEN_PRICING,
+                                });
+                                seenIds.add(id);
+                            }
+                        }
 
-                        if (mapped.length > 0) {
-                            console.log(`[ClaudeService] Fetched ${mapped.length} models from CLI`);
-                            resolve(mapped);
+                        if (result.length > 0) {
+                            console.log(
+                                `[ClaudeService] Resolved ${result.length} models from CLI help`,
+                            );
+                            resolve(result);
                         } else {
                             resolve(null);
                         }
                     } catch (parseError) {
-                        console.log("[ClaudeService] Failed to parse model list:", parseError);
+                        console.log(
+                            "[ClaudeService] Failed to parse model info from help:",
+                            parseError,
+                        );
                         resolve(null);
                     }
                 },
