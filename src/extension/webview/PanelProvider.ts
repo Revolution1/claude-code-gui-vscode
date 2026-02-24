@@ -568,14 +568,21 @@ export class PanelProvider {
     private async _handleWebviewMessage(message: WebviewMessage): Promise<void> {
         console.log("[PanelProvider] Received message from webview:", message.type);
 
-        // Create handler context
-        const context = this._createHandlerContext();
+        try {
+            // Create handler context
+            const context = this._createHandlerContext();
 
-        // Use the handler map to process the message
-        const handled = await handleWebviewMessage(message, context);
+            // Use the handler map to process the message
+            const handled = await handleWebviewMessage(message, context);
 
-        if (!handled) {
-            console.log("[PanelProvider] Message not handled:", message.type);
+            if (!handled) {
+                console.log("[PanelProvider] Message not handled:", message.type);
+            }
+        } catch (error) {
+            console.error(
+                `[PanelProvider] Error handling message '${message.type}':`,
+                error,
+            );
         }
     }
 
@@ -652,21 +659,34 @@ export class PanelProvider {
     }
 
     private _sendConversationList(): void {
-        const indexEntries = this._conversationService.getConversationIndex();
-        // Map to format expected by HistoryView
-        const conversations = indexEntries.map((entry) => ({
-            filename: entry.filename,
-            timestamp: entry.startTime || entry.endTime,
-            preview: entry.firstUserMessage || entry.lastUserMessage || "No preview",
-            messageCount: entry.messageCount,
-            sessionId: entry.sessionId,
-            totalCost: entry.totalCost,
-        }));
-        this._postMessage({
-            type: "conversationList",
-            data: conversations,
-            conversations,
-        });
+        try {
+            const indexEntries = this._conversationService.getConversationIndex();
+            // Map to format expected by HistoryView
+            const conversations = indexEntries.map((entry) => ({
+                filename: entry.filename,
+                timestamp: entry.startTime || entry.endTime,
+                preview: entry.firstUserMessage || entry.lastUserMessage || "No preview",
+                messageCount: entry.messageCount,
+                sessionId: entry.sessionId,
+                totalCost: entry.totalCost,
+            }));
+            console.log(
+                `[PanelProvider] Sending conversationList with ${conversations.length} items`,
+            );
+            this._postMessage({
+                type: "conversationList",
+                data: conversations,
+                conversations,
+            });
+        } catch (error) {
+            console.error("[PanelProvider] Error sending conversation list:", error);
+            // Always send a response so the webview loading state clears
+            this._postMessage({
+                type: "conversationList",
+                data: [],
+                conversations: [],
+            });
+        }
     }
 
     private async _sendPermissions(): Promise<void> {

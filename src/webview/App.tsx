@@ -114,6 +114,12 @@ export const App: React.FC = () => {
         if (isVSCode && isHistoryOpen) {
             setIsHistoryLoading(true);
             postMessage({ type: "getConversationList" });
+
+            // Safety timeout: clear loading state if no response within 5s
+            const timeout = setTimeout(() => {
+                setIsHistoryLoading(false);
+            }, 5000);
+            return () => clearTimeout(timeout);
         }
     }, [isVSCode, isHistoryOpen, postMessage, setIsHistoryLoading]);
 
